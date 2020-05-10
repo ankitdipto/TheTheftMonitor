@@ -10,6 +10,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.Switch;
 
 import java.util.Properties;
 
@@ -23,25 +26,101 @@ import javax.mail.internet.MimeMessage;
 
 public class MainActivity extends AppCompatActivity {
 
+    static GMailSender sender;
     static String mUserName ="moondipto@gmail.com";
     static String mPassword="moondipu";
     static String mRecipients = "ankitdipto@gmail.com";//,mFilePath=””;
     boolean mIsEmailSend=false;
-
+    boolean switch_state1=false;
+    boolean switch_state2=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        final Intent intent1=new Intent(MainActivity.this,DemoCamService.class);
-        Button start_button=findViewById(R.id.start);
-        start_button.setOnClickListener(new View.OnClickListener() {
+        Switch start1=findViewById(R.id.start1);
+        Switch start2=findViewById(R.id.start2);
+        final EditText email=findViewById(R.id.EmailField);
+        final EditText password=findViewById(R.id.PasswordField);
+        Button button1=findViewById(R.id.button1);
+        Button button2=findViewById(R.id.button2);
+        button1.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
-                Log.d("CAM_ACTION","About to start Service");
-                startService(intent1);
+            public void onClick(View view)
+            {
+                startService(new Intent(getApplicationContext(),UpdateService.class));
             }
         });
+        button2.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                stopService(new Intent(getApplicationContext(),UpdateService.class));
+            }
+        });
+        //mUserName=email.getText().toString();
+        //mPassword=password.getText().toString();
+        //sender = new GMailSender(mUserName, mPassword);
+        final Intent intent2=new Intent(MainActivity.this,ProtectionService.class);
+        final Intent intent1=new Intent(getApplicationContext(),UpdateService.class);
+        //startService(intent1);
+        //startService(intent2);
+        //startService(intent3);
+        switch_state1=start1.isChecked();
+        switch_state2=start2.isChecked();
+
+        start1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,boolean isChecked)
+            {
+                if(isChecked==true)
+                {
+                    mUserName=email.getText().toString();
+                    mPassword=password.getText().toString();
+                    sender = new GMailSender(mUserName, mPassword);
+                    startService(intent1);
+                }
+                else
+                {
+                    stopService(intent1);
+                }
+            }
+        });
+
+        start2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,boolean isChecked)
+            {
+                if(isChecked==true)
+                {
+                    startService(intent2);
+                }
+                else
+                {
+                    stopService(intent2);
+                }
+            }
+        });
+        /*if(switch_state1==true)
+        {
+            startService(intent1);
+        }
+        else
+        {
+            stopService(intent1);
+        }
+
+        if(switch_state2==true)
+        {
+            startService(intent2);
+        }
+        else
+        {
+            stopService(intent2);
+        }*/
         //if(ActivityCompat.checkSelfPermission(this, Manifest.permission.))
         //sendEmail();
         //sendEmail2();
@@ -123,5 +202,9 @@ public class MainActivity extends AppCompatActivity {
         Thread t=new Thread(r);
         t.start();
     }
-
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+    }
 }
